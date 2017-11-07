@@ -1,0 +1,27 @@
+{
+    "name": "sympla/the-brick",
+    "description": "A library that provides content negotiation",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bruno Coelho",
+            "email": "bruno.coelho@sympla.com.br"
+        }
+    ],
+    "require": {
+    },
+    "require-dev": {
+      "phpunit/phpunit": "~6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sympla\\Search\\": "src/"
+        }
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "Tests\\": "tests"
+      }
+    }
+}
