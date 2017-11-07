@@ -8,6 +8,6 @@ class SearchServiceProvider extends ServiceProvider {
 
     public function register()
     {
-        $this->app->bind('search', 'Sympla\Search\Search');
+        $this->app->bind('search', 'Sympla\Search\Search\Search');
     }
 }
