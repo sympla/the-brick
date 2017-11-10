@@ -13,34 +13,34 @@ class Search {
     {
         $this->request = Request::all();
         if (Request::exists('fields')) {
-            $this->parseFields($this->request['fields']);            
+            $this->parseFields($this->request['fields']);
+            // dd($this->fields);
         }
     }
 
-    public function parseFields($fields, $relation = null) {
+    public function parseFields($fields) {
      
         // (do the required processing...)
-        $temp = explode($relation ? ',' : ',' , $fields, 2);
-     
+        $temp = explode(',' , $fields, 2);
+
         if (count($temp) === 0) {
             // end the recursion
             return;
         } else {
-            if (strpos($temp[0], '(') === false) {
-                if (is_null($relation)) {
+            if (str_contains($fields, '(') && strpos($fields, ',') > strpos($fields, '(')) {
+                $start = strpos($fields, '(');
+                $end = strpos($fields, ')');
+                $_relation = substr($fields, 0, $start); 
+                $_fields = substr($fields, $start+1, $end-$start-1);
+                $this->fields[$_relation] = $_fields;
+                // continue the recursion
+                return $this->parseFields(substr($fields, $end+2).',');
+            } else if (isset($temp[1])) {
+                if (!empty($temp[0])) {
                     $this->fields[] = $temp[0];
-                } else {
-                    $this->fields[$relation][] = str_replace(')', '', $temp[0]);
                 }
-            } else {
-                $temp = explode('(', $fields, 2);
                 // continue the recursion
-                return $this->parseFields($temp[1], $temp[0]);
-            }
-
-            if (isset($temp[1])) {
-                // continue the recursion
-                return $this->parseFields($temp[1], $relation);
+                return $this->parseFields($temp[1]);
             } else {
                 // end the recursion
                 return;
@@ -48,41 +48,60 @@ class Search {
         }
     }
 
+    public function parseRelations($fields, $relations = [])
+    {     
+        foreach ($fields as $key => $value) {
+            $relations[] = $key.(empty($value)?'':':'.strtoupper($value));
+        }
+        return $relations;
+    }
+
+    public function negotiateRelations($fields)
+    {
+        $this->model->with($this->parseRelations($fields));
+        return $this;
+    }
+
+    public function negotiateFields($table, $fields)
+    {
+        if (count($fields) === 0) {
+            return $this;
+        } else {
+
+            $field = head($fields);
+
+            if (empty($field)) {
+                return $this;
+            }
+
+            $fields = array_splice($fields, 1);
+            if (Schema::hasColumn($table, $field)) {
+                $this->model = $this->model->addSelect(strtoupper($field));
+            }
+
+            // continue the recursion
+            return $this->negotiateFields($table, $fields);
+
+        }
+    }
+
     public function negotiate($model)
     {
-        $modelPath = '\App\\';
-        $model = $modelPath.$model;
-        $model = new $model;
-
-        $this->classModel = $model;
-        $this->table = $model->getTable();  
+        $modelPrefix = '\App\\';
+        $modelNameSpace = $modelPrefix.$model;
+        $this->model = new $modelNameSpace;
         
-        if (!is_null($this->fields)) {
-            foreach ($this->fields as $key => $value) {
-                if (is_array($value)) {
-                    if (method_exists($this->classModel, $key)) {      
-                        $model = $model->with([
-                            $key => function ($query) use ($value) {
-                                $_relation = $query->getRelated()->getTable();
-                                foreach ($value as $key2 => $value2) {
-                                    if (Schema::hasColumn($_relation, $value2)) {
-                                        $query->addSelect($value2);
-                                    }
-                                }
-                                
-                            }
-                        ]);
-                    }
-                } else {
-                    if (Schema::hasColumn($this->table, $value)) {
-                        $model = $model->addSelect($value);
-                    }
-                }
-            }
-            return $model;
-        } else {
-            return $model;
-        }
-        return $model;
+        $fields = array_where($this->fields, function ($value, $key) {
+            return !is_string($key);
+        });
+
+        $relations = array_where($this->fields, function ($value, $key) {
+            return is_string($key);
+        });
+
+        $this->negotiateFields($this->model->getTable(), $fields)
+            ->negotiateRelations($relations);
+
+        return $this->model;
     }
 }
