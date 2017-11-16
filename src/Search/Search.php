@@ -7,11 +7,13 @@ use Schema;
 
 class Search {
 
-    var $fields = [];
-    var $relations = [];
-    var $filters = [];
-    var $relationsFilters = [];
-    var $namingConvention = 'lowercase';
+    protected $fields = [];
+    protected $filters = [];
+    protected $namingConvention = 'lowercase';
+    protected $orderBy = '';
+    protected $relations = [];
+    protected $relationsFilters = [];
+    protected $sort = 'ASC';
 
     public function __construct()
     {
@@ -24,28 +26,38 @@ class Search {
         if (Request::exists('filters')) {
             $this->parseFilters($this->request['filters']);
         }
-    }
 
-    public function setAttribute($val)
-    {
-        switch ($this->namingConvention) {
-            case 'lowercase':
-                return strtolower($val);
-                break;
+        if (Request::exists('orderBy')) {
+            $this->orderBy = $this->request['orderBy'];
+        }
 
-            case 'uppercase':
-                return strtoupper($val);
-                break;
-            
-            default:
-                return $val;
-                break;
+        if (Request::exists('sort')) {
+            $this->sort = $this->request['sort'];
         }
     }
 
-    public function setUpperCaseConvention()
+    public function negotiate($model)
     {
-        $this->namingConvention = 'uppercase';
+        $modelPrefix = '\App\\';
+        $modelNameSpace = $modelPrefix.$model;
+        $this->model = new $modelNameSpace;
+        $this->modelObj = $this->model;
+        $this->table = $this->model->getTable();
+
+        $this->negotiateFields($this->table, $this->fields)
+            ->negotiateRelations($this->relations)
+            ->negotiateFilters($this->table, $this->filters)
+            ->negotiateRelationsFilters($this->relationsFilters)
+            ->negotiateOrder($this->table, $this->orderBy, $this->sort);
+
+        return $this->model;
+    }
+
+    public function negotiateOrder($table, $order = '', $sort = 'ASC')
+    {
+        if (!empty($order) && Schema::hasColumn($table, $order)) {
+            $this->model->orderBy($order, $sort?:'ASC');
+        }
         return $this;
     }
 
@@ -86,6 +98,9 @@ class Search {
             $fields = array_splice($fields, 1);
             if (Schema::hasColumn($table, $field)) {
                 $this->model = $this->model->addSelect($this->setAttribute($field));
+            } elseif (method_exists($this->modelObj, 'scope'.ucfirst(camel_case($field)))) {
+                $scope = camel_case($field);
+                $this->model = $this->model->$scope();
             }
 
             // continue the recursion
@@ -107,30 +122,22 @@ class Search {
             }
 
             $filters = array_splice($filters, 1);
-            $filter = $this->str_array_pos($filter, ['!=', '>=', '<=', '=', '>', '<']);
-            if (Schema::hasColumn($table, $filter[0])) {
-                $this->model = $this->model->where($this->setAttribute($filter[0]), $filter[1], $filter[2]);
+            $condition = $this->str_array_pos($filter, ['!=', '>=', '<=', '=', '>', '<']);
+            if (Schema::hasColumn($table, $condition[0])) {
+                $this->model = $this->model->where(
+                    $this->setAttribute($condition['attribute']),
+                    $condition['operator'],
+                    $condition['value']
+                );
+            } elseif (method_exists($this->modelObj, 'scope'.ucfirst(camel_case($filter)))) {
+                $scope = camel_case($filter);
+                $this->model = $this->model->$scope();
             }
 
             // continue the recursion
             return $this->negotiateFilters($table, $filters);
 
         }
-    }
-
-    public function negotiate($model)
-    {
-        $modelPrefix = '\App\\';
-        $modelNameSpace = $modelPrefix.$model;
-        $this->model = new $modelNameSpace;
-        $this->table = $this->model->getTable();
-
-        $this->negotiateFields($this->table, $this->fields)
-            ->negotiateRelations($this->relations)
-            ->negotiateFilters($this->table, $this->filters)
-            ->negotiateRelationsFilters($this->relationsFilters);
-
-        return $this->model;
     }
 
     public function parseFields($fields)
@@ -209,15 +216,38 @@ class Search {
         return $relations;
     }
 
+    public function setAttribute($val)
+    {
+        switch ($this->namingConvention) {
+            case 'lowercase':
+                return strtolower($val);
+                break;
+
+            case 'uppercase':
+                return strtoupper($val);
+                break;
+            
+            default:
+                return $val;
+                break;
+        }
+    }
+
+    public function setUpperCaseConvention()
+    {
+        $this->namingConvention = 'uppercase';
+        return $this;
+    }
+
     public function str_array_pos($string, $array)
     {
         for ($i = 0, $n = count($array); $i < $n; $i++) {
             if (($pos = strpos($string, $array[$i])) !== false) {
                 $temp = explode($array[$i], $string);
                 return [
-                    $temp[0],
-                    $array[$i],
-                    $temp[1]
+                    'attribute' => $temp[0],
+                    'operator' => $array[$i],
+                    'value' => $temp[1]
                 ];
             }
         }
