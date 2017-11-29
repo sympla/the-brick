@@ -123,7 +123,7 @@ class Search {
 
             $filters = array_splice($filters, 1);
             $condition = $this->str_array_pos($filter, ['!=', '>=', '<=', '=', '>', '<']);
-            if (Schema::hasColumn($table, $condition[0])) {
+            if (Schema::hasColumn($table, $condition['attribute'])) {
                 $this->model = $this->model->where(
                     $this->setAttribute($condition['attribute']),
                     $condition['operator'],
