@@ -90,13 +90,13 @@ class Search {
         } else {
 
             $field = head($fields);
-
+            $fieldSearch = str_replace($table.'.', '', $field);
             if (empty($field)) {
                 return $this;
             }
 
             $fields = array_splice($fields, 1);
-            if (Schema::hasColumn($table, $field)) {
+            if (Schema::hasColumn($table, $fieldSearch)) {
                 $this->model = $this->model->addSelect($this->setAttribute($field));
             } elseif (method_exists($this->modelObj, 'scope'.ucfirst(camel_case($field)))) {
                 $scope = camel_case($field);
@@ -142,7 +142,7 @@ class Search {
 
     public function parseFields($fields)
     {
-     
+
         // (do the required processing...)
         $temp = explode(',' , $fields, 2);
 
@@ -153,7 +153,7 @@ class Search {
             if (str_contains($fields, '(') && (strpos($fields, ',') > strpos($fields, '(') || strpos($fields, ',') === false)) {
                 $start = strpos($fields, '(');
                 $end = strpos($fields, ')');
-                $_relation = substr($fields, 0, $start); 
+                $_relation = substr($fields, 0, $start);
                 $_fields = substr($fields, $start+1, $end-$start-1);
                 $this->relations[$_relation] = $_fields;
                 // continue the recursion
@@ -176,7 +176,7 @@ class Search {
 
     public function parseFilters($filters)
     {
-     
+
         // (do the required processing...)
         $temp = explode(',' , $filters, 2);
 
@@ -187,7 +187,7 @@ class Search {
             if (str_contains($filters, '(') && (strpos($filters, ',') > strpos($filters, '(') || strpos($filters, ',') === false)) {
                 $start = strpos($filters, '(');
                 $end = strpos($filters, ')');
-                $_relation = substr($filters, 0, $start); 
+                $_relation = substr($filters, 0, $start);
                 $_filters = substr($filters, $start+1, $end-$start-1);
                 $this->relationsFilters[$_relation] = $_filters;
                 // continue the recursion
@@ -226,7 +226,7 @@ class Search {
             case 'uppercase':
                 return strtoupper($val);
                 break;
-            
+
             default:
                 return $val;
                 break;
