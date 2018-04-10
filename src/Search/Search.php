@@ -122,13 +122,26 @@ class Search {
             }
 
             $filters = array_splice($filters, 1);
-            $condition = $this->str_array_pos($filter, ['!=', '>=', '<=', '=', '>', '<']);
+            $condition = $this->str_array_pos($filter, ['!=', '>=', '<=', '=', '>', '<', '%']);
+            
             if (Schema::hasColumn($table, $condition['attribute'])) {
-                $this->model = $this->model->where(
-                    $this->setAttribute($condition['attribute']),
-                    $condition['operator'],
-                    $condition['value']
-                );
+                if (strtolower(substr($condition['attribute'], -strlen('_date'))) === '_date') {
+                    $this->model = $this->model->whereRaw(
+                        'DATE_FORMAT('.$this->setAttribute($condition['attribute']).', "%d/%m/%Y %H:%i") LIKE "%'.$condition['value'].'%"'
+                    );
+                } elseif (strpos($condition['operator'], '%') !== false) {
+                    $this->model = $this->model->where(
+                        $this->setAttribute($condition['attribute']),
+                        'like',
+                        '%'.$condition['value'].'%'
+                    );
+                } else {
+                    $this->model = $this->model->where(
+                        $this->setAttribute($condition['attribute']),
+                        $condition['operator'],
+                        $condition['value']
+                    );
+                }
             } elseif (method_exists($this->modelObj, 'scope'.ucfirst(camel_case($filter)))) {
                 $scope = camel_case($filter);
                 $this->model = $this->model->$scope();
