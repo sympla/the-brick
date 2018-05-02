@@ -14,6 +14,7 @@ class Search {
     protected $relations = [];
     protected $relationsFilters = [];
     protected $sort = 'ASC';
+    protected $limit = null;
 
     public function __construct()
     {
@@ -34,6 +35,10 @@ class Search {
         if (Request::exists('sort')) {
             $this->sort = $this->request['sort'];
         }
+
+        if (Request::exists('limit')) {
+            $this->limit = $this->request['limit'];
+        }
     }
 
     public function negotiate($model)
@@ -48,9 +53,18 @@ class Search {
             ->negotiateRelations($this->relations)
             ->negotiateFilters($this->table, $this->filters)
             ->negotiateRelationsFilters($this->relationsFilters)
-            ->negotiateOrder($this->table, $this->orderBy, $this->sort);
+            ->negotiateOrder($this->table, $this->orderBy, $this->sort)
+            ->negotiateLimit($this->limit);
 
         return $this->model;
+    }
+
+    public function negotiateLimit($limit)
+    {
+        if (!is_null($limit)) {
+            $this->model->limit($limit);
+        }
+        return $this;
     }
 
     public function negotiateOrder($table, $order = '', $sort = 'ASC')
