@@ -49,23 +49,16 @@ class Search {
 
     /**
      * @param $model
-     * @return $this
-     */
-    public function setModel($model)
-    {
-        $this->model = app($model);
-        return $this;
-    }
-
-    /**
-     * @param $model
      * @return mixed
      */
     public function negotiate($model)
     {
-        $modelPrefix = config('the-brick-search.models.namespace_prefix');
-        $modelNameSpace = $modelPrefix.$model;
-        $this->model = new $modelNameSpace;
+        if(!$this->model) {
+            $modelPrefix = config('the-brick-search.models.namespace_prefix');
+            $modelNameSpace = $modelPrefix . $model;
+            $this->model = new $modelNameSpace;
+        }
+
         $this->modelObj = $this->model;
         $this->table = $this->model->getTable();
 
@@ -359,5 +352,70 @@ class Search {
             }
         }
         return false;
+    }
+
+    /**
+     * @param $model
+     * @return $this
+     */
+    public function setModel($model)
+    {
+        $this->model = app($model);
+        return $this;
+    }
+
+    /**
+     * Add fields separated by comma
+     * @param string $fields
+     * @return $this
+     */
+    public function addFields(string $fields)
+    {
+        $this->parseFields($fields);
+        return $this;
+    }
+
+    /**
+     * Add filters separated by comma
+     * @param string $fields
+     * @return $this
+     */
+    public function addFilters(string $fields)
+    {
+        $this->parseFilters($fields);
+        return $this;
+    }
+
+    /**
+     * Set order by
+     * @param string $orderBy
+     * @return $this
+     */
+    public function setOrderBy(string $orderBy)
+    {
+        $this->orderBy = $orderBy;
+        return $this;
+    }
+
+    /**
+     * Set sort
+     * @param string $sort
+     * @return $this
+     */
+    public function setSort(string $sort)
+    {
+        $this->sort = strtoupper($sort);
+        return $this;
+    }
+
+    /**
+     * Set limit $sort
+     * @param int $limit
+     * @return $this
+     */
+    public function setLimit(int $limit)
+    {
+        $this->limit = $limit;
+        return $this;
     }
 }
