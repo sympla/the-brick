@@ -8,23 +8,7 @@ This library helps to negotiate content related to eloquent models (fields, rela
 
 Install the package using composer:
 
-    $ composer require sympla/the-brick
-
-##### Service Provider (Optional on Laravel 5.5)
-Once Composer has installed or updated your packages you need add aliases or register you packages into Laravel. 
-
-Open up config/app.php and find the `providers` key and add:
-
-```
-Sympla\Search\Search\SearchServiceProvider::class,
-```
-
-
-Open up config/app.php and find the `aliases` key and add:
-
-```
-'Search' => Sympla\Search\Facades\SearchFacade::class,
-```
+    $ composer require sympla/the-brick ~1.0
 
 That's it.
 
@@ -37,8 +21,6 @@ That's it.
 ## Contact
 
 Bruno Coelho <bruno.coelho@sympla.com.br>
-
-Marcus Campos <marcus.campos@sympla.com.br>
 
 ## License
 

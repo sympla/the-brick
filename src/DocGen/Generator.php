@@ -24,7 +24,7 @@ class Generator
         $this->createJsonFile();
     }
 
-    public function createJsonFile()
+    private function createJsonFile()
     {
         $storage = app('Storage');
         $storage::disk('local')
@@ -56,7 +56,9 @@ class Generator
 
                 if (isset($docArray['negotiate'])) {
                     $class = $docArray['negotiate'];
-                    $class = $this->getReflectionClass('App\\'.$class);
+                    $class = $this->getReflectionClass(
+                        (config('the-brick-search.models.namespace_prefix') ?? 'App\\').$class
+                    );
                     $methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
                     $filters = [];
 
@@ -69,7 +71,7 @@ class Generator
                         }
                     }
 
-                    $this->docArray = [
+                    $this->docArray[] = [
                         'route' => $route->getPath(),
                         'uses' => $route->getAction()['uses'],
                         'description' => $docArray['negotiateDesc'] ?? '',

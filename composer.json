@@ -1,42 +1,27 @@
 {
-  "name": "sympla/the-brick",
-  "description": "A library that provides content negotiation",
-  "type": "library",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Bruno Coelho",
-      "email": "bruno.coelho@sympla.com.br"
+    "name": "sympla/the-brick",
+    "description": "A library that provides content negotiation",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bruno Coelho",
+            "email": "bruno.coelho@sympla.com.br"
+        }
+    ],
+    "require": {
     },
-    {
-      "name": "Marcus Campos",
-      "email": "marcus.campos@sympla.com.br"
-    }
-  ],
-  "require": {
-    "php": ">=7.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "~6.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Sympla\\Search\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Tests\\": "tests"
-    }
-  },
-  "extra": {
-    "laravel": {
-      "providers": [
-        "Sympla\\Search\\Search\\SearchServiceProvider"
-      ],
-      "aliases": {
-        "Search": "Sympla\\Search\\Facades\\SearchFacade"
+    "require-dev": {
+      "phpunit/phpunit": "~6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sympla\\Search\\": "src/"
+        }
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "Tests\\": "tests"
       }
     }
-  }
 }

@@ -54,7 +54,7 @@ class Search {
     public function negotiate($model)
     {
         if(!$this->model) {
-            $modelPrefix = config('the-brick-search.models.namespace_prefix');
+            $modelPrefix = config('the-brick-search.models.namespace_prefix') ?? 'App\\';
             $modelNameSpace = $modelPrefix . $model;
             $this->model = new $modelNameSpace;
         }
