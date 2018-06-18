@@ -7,8 +7,19 @@
 
 namespace Sympla\Search\Http\Controllers;
 
-class DocumentationController
+class DocumentationController extends Controller
 {
+    /**
+     * DocumentationController constructor.
+     */
+    public function __construct()
+    {
+        $this->middlewareHandle();
+    }
+
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function index()
     {
         $storage = app('Storage');
@@ -23,5 +34,16 @@ class DocumentationController
         }
 
         return view('negotiate::index', compact('docArray', 'lastModified'));
+    }
+
+    /**
+     *
+     */
+    private function middlewareHandle()
+    {
+        $authMiddlware = config('the-brick-search.documentation.auth_middleware');
+        if (!empty($authMiddlware)) {
+            $this->middleware($authMiddlware);
+        }
     }
 }
