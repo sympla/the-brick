@@ -6,55 +6,88 @@
     <meta name="description" content="Negotiate documentation">
     <title>Negotiate Documentation</title>
 
-    <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <style>
-        /* Style the button that is used to open and close the collapsible content */
-        .collapsible {
-            background-color: #eee;
-            color: #444;
-            cursor: pointer;
-            padding: 18px;
-            width: 100%;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-size: 15px;
+        .nounderline {
+            text-decoration: none !important
         }
-
-        /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-        .active, .collapsible:hover {
-            background-color: #ccc;
-        }
-
-        /* Style the collapsible content. Note: hidden by default */
-        .content {
-            padding: 0 18px;
-            display: none;
-            overflow: hidden;
-            background-color: #f1f1f1;
     </style>
 </head>
 
 <body>
 <div class="container">
-    @foreach($docArray as $route)
-        <button class="collapsible">{{ $route->route }}</button>
-        <div class="content">
-            <p>
-                <b>Description: </b> <p>{{ $route->description }}</p>
-            </p>
-            <p>
-                <b>Filters: </b>
-                @foreach($route->filters as $filter)
-                    <p>
-                        <b>{{ $filter->name }}: </b> <p>{{ $filter->description }}</p>
-                    </p>
-                @endforeach
-            </p>
+    <h1> Documentation </h1>
+    <div class="panel panel-default">
+        <div class="panel-body">
+
+            @foreach($docArray as $key => $route)
+            <div class="panel panel-default" style="margin-bottom: 5px;">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" class="nounderline" href="#collapse{{ $key }}">
+                            @foreach($route->methods as $method)
+                            @if($method == "POST")
+                            <span class="label label-success">
+                                    {{ $method }}
+                                </span>
+                            @elseif($method == "GET")
+                            <span class="label label-primary">
+                                    {{ $method }}
+                                </span>
+                            @elseif($method == "PUT")
+                            <span class="label label-warning">
+                                    {{ $method }}
+                                </span>
+                            @elseif($method == "DELETE")
+                            <span class="label label-warning">
+                                    {{ $method }}
+                                </span>
+                            @elseif($method == "DELETE")
+                            <span class="label label-info">
+                                    {{ $method }}
+                                </span>
+                            @else
+                            <span class="label label-default">
+                                    {{ $method }}
+                                </span>
+                            @endif
+                            &nbsp;
+                            @endforeach
+                            <b>{{ $route->route }}</b>
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapse{{ $key }}" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        {{ !empty($route->description) ? $route->description : 'Without description' }}
+                    </div>
+                    <div class="panel-body">
+                        <p><strong>Filtros: </strong></p>
+                        @foreach($route->filters as $filter)
+                        <div class="panel panel-default" style="margin-bottom: 5px;">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <a data-toggle="collapse" data-parent="#accordion" class="nounderline" href="#collapsec{{ $key }}">
+                                        {{ $filter->name }}
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="collapsec{{ $key }}" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    <div class="panel-body">{{ !empty($filter->description) ? $filter->description : 'Without description' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endforeach
         </div>
-    @endforeach
+    </div>
+    Last update: {{ $lastModified }}
 </div> <!-- /container -->
 </body>
 <footer>

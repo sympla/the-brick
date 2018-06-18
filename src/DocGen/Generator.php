@@ -73,6 +73,7 @@ class Generator
 
                     $this->docArray[] = [
                         'route' => $route->getPath(),
+                        'methods' => $route->getMethods(),
                         'uses' => $route->getAction()['uses'],
                         'description' => $docArray['negotiateDesc'] ?? '',
                         'filters' => $filters

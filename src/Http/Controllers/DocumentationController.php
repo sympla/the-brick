@@ -15,6 +15,13 @@ class DocumentationController
         $docArray = json_decode($storage::disk('local')
             ->get('the-brick/doc.json'));
 
-        return view('negotiate::index', compact('docArray'));
+        $lastModified = date('d M Y', $storage::disk('local')
+            ->lastModified('the-brick/doc.json'));
+
+        if(!$docArray) {
+            $docArray = [];
+        }
+
+        return view('negotiate::index', compact('docArray', 'lastModified'));
     }
 }
