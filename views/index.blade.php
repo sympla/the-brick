@@ -21,41 +21,40 @@
     <h1> Documentation </h1>
     <div class="panel panel-default">
         <div class="panel-body">
-
             @foreach($docArray as $key => $route)
             <div class="panel panel-default" style="margin-bottom: 5px;">
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a data-toggle="collapse" data-parent="#accordion" class="nounderline" href="#collapse{{ $key }}">
-                            @foreach($route->methods as $method)
-                            @if($method == "POST")
-                            <span class="label label-success">
-                                    {{ $method }}
-                                </span>
-                            @elseif($method == "GET")
-                            <span class="label label-primary">
-                                    {{ $method }}
-                                </span>
-                            @elseif($method == "PUT")
-                            <span class="label label-warning">
-                                    {{ $method }}
-                                </span>
-                            @elseif($method == "DELETE")
-                            <span class="label label-warning">
-                                    {{ $method }}
-                                </span>
-                            @elseif($method == "DELETE")
-                            <span class="label label-info">
-                                    {{ $method }}
-                                </span>
-                            @else
-                            <span class="label label-default">
-                                    {{ $method }}
-                                </span>
-                            @endif
-                            &nbsp;
-                            @endforeach
                             <b>{{ $route->route }}</b>
+                            @foreach($route->methods as $method)
+                                @if($method == "POST")
+                                    <span class="label label-success pull-right" style="margin-left: 3px;">
+                                            {{ $method }}
+                                    </span>
+                                @elseif($method == "GET")
+                                    <span class="label label-primary pull-right" style="margin-left: 3px;">
+                                        {{ $method }}
+                                    </span>
+                                @elseif($method == "PUT")
+                                    <span class="label label-warning pull-right" style="margin-left: 3px;">
+                                        {{ $method }}
+                                    </span>
+                                @elseif($method == "DELETE")
+                                <span class="label label-warning pull-right" style="margin-left: 3px;">
+                                        {{ $method }}
+                                    </span>
+                                @elseif($method == "DELETE")
+                                    <span class="label label-info pull-right" style="margin-left: 3px;">
+                                        {{ $method }}
+                                    </span>
+                                @else
+                                    <span class="label label-default pull-right" style="margin-left: 3px;">
+                                        {{ $method }}
+                                    </span>
+                                @endif
+                            @endforeach
+                            &nbsp;
                         </a>
                     </h4>
                 </div>
@@ -69,12 +68,12 @@
                         <div class="panel panel-default" style="margin-bottom: 5px;">
                             <div class="panel-heading">
                                 <h4 class="panel-title">
-                                    <a data-toggle="collapse" data-parent="#accordion" class="nounderline" href="#collapsec{{ $key }}">
+                                    <a data-toggle="collapse" data-parent="#accordion" class="nounderline" href="#collapsec{{ $uniqid = uniqid() }}">
                                         {{ $filter->name }}
                                     </a>
                                 </h4>
                             </div>
-                            <div id="collapsec{{ $key }}" class="panel-collapse collapse">
+                            <div id="collapsec{{ $uniqid }}" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     <div class="panel-body">{{ !empty($filter->description) ? $filter->description : 'Without description' }}</div>
                                 </div>
