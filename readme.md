@@ -82,6 +82,10 @@ public function scopeFilterByPhone($query)
 }
 ```
 
+#### Accessing the Documentation
+
+Access the documentation through the url `http://localhost:8000/_negotiate/documentation`
+
 ## Contact
 
 Bruno Coelho <bruno.coelho@sympla.com.br>
