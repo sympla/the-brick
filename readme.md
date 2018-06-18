@@ -10,6 +10,9 @@ Install the package using composer:
 
     $ composer require sympla/the-brick ~1.0
 
+Publish the package configuration:
+	$ php artisan vendor:publish --provider="Sympla\Search\Search\SearchServiceProvider"
+
 That's it.
 
 ## Simple usage
@@ -84,11 +87,8 @@ public function scopeFilterByPhone($query)
 
 #### Generate the documentation
 
-Execute this command
-
-```bash
-php artisan negotiate:docgen
-```
+Execute the negotiate docgen command
+	$ php artisan negotiate:docgen
 
 #### Accessing the Documentation
 
