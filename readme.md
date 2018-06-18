@@ -82,6 +82,14 @@ public function scopeFilterByPhone($query)
 }
 ```
 
+#### Generate the documentation
+
+Execute this command
+
+```bash
+php artisan negotiate:docgen
+```
+
 #### Accessing the Documentation
 
 Access the documentation through the url `http://localhost:8000/_negotiate/documentation`
