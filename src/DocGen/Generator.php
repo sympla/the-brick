@@ -57,7 +57,7 @@ class Generator
                 if (isset($docArray['negotiate'])) {
                     $class = $docArray['negotiate'];
                     $class = $this->getReflectionClass(
-                        (config('the-brick-search.models.namespace_prefix') ?? 'App\\').$class
+                        (config('the-brick-search.namespace_prefix') ?? 'App\\').$class
                     );
                     $methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
                     $filters = [];
