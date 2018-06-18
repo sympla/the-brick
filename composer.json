@@ -23,5 +23,12 @@
       "psr-4": {
         "Tests\\": "tests"
       }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sympla\\Search\\Search\\SearchServiceProvider"
+            ]
+        }
     }
 }
