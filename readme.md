@@ -11,7 +11,7 @@ Install the package using composer:
     $ composer require sympla/the-brick ~1.0
 
 Publish the package configuration:
-	$ php artisan vendor:publish --provider="Sympla\Search\Search\SearchServiceProvider"
+        $ php artisan vendor:publish --provider="Sympla\Search\Search\SearchServiceProvider"
 
 That's it.
 
@@ -26,7 +26,19 @@ public function index(Request $request)
 }
 ```
 
-Create your filter 
+Extend the negotiate on your model
+
+```php
+namespace App\Models;
+
+use Sympla\Search\Model\Model;
+
+class User extends Model
+{
+}
+```
+
+Create your filter
 
 ```php
 public function scopeFilterByPhone($query)
@@ -65,8 +77,8 @@ Add to your docblock the documentation variables
 ```php
 /**
  * @negotiate Models\User
- * @negotiateDesc Get and filter all users 
-*/ 
+ * @negotiateDesc Get and filter all users
+*/
 public function index(Request $request)
 {
     $res = $res->negotiate('Models\User');
@@ -87,8 +99,11 @@ public function scopeFilterByPhone($query)
 
 #### Generate the documentation
 
-Execute the negotiate docgen command
-	$ php artisan negotiate:docgen
+Execute this command
+
+```bash
+php artisan negotiate:docgen
+```
 
 #### Accessing the Documentation
 

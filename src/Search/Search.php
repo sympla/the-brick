@@ -2,19 +2,23 @@
 
 namespace Sympla\Search\Search;
 
+use DB;
 use Request;
 use Schema;
 
-class Search {
-
+class Search
+{
+    protected $debug = false;
     protected $fields = [];
     protected $filters = [];
+    protected $limit = null;
     protected $namingConvention = 'lowercase';
+    protected $noPaginate = false;
     protected $orderBy = '';
     protected $relations = [];
     protected $relationsFilters = [];
+    protected $size = 10;
     protected $sort = 'ASC';
-    protected $limit = null;
     private $model;
     private $modelObj;
     private $table;
@@ -27,23 +31,35 @@ class Search {
         $this->request = Request::all();
 
         if (Request::exists('fields')) {
-            $this->parseFields($this->request['fields']);
+            $this->addFields($this->request['fields']);
         }
 
         if (Request::exists('filters')) {
-            $this->parseFilters($this->request['filters']);
+            $this->addFilters($this->request['filters']);
         }
 
         if (Request::exists('orderBy')) {
-            $this->orderBy = $this->request['orderBy'];
+            $this->setOrderBy($this->request['orderBy']);
         }
 
         if (Request::exists('sort')) {
-            $this->sort = $this->request['sort'];
+            $this->setSort($this->request['sort']);
         }
 
         if (Request::exists('limit')) {
-            $this->limit = $this->request['limit'];
+            $this->setLimit($this->request['limit']);
+        }
+
+        if (Request::exists('noPaginate')) {
+            $this->setNoPaginate($this->request['noPaginate']);
+        }
+
+        if (Request::exists('debug')) {
+            $this->setDebug($this->request['debug']);
+        }
+
+        if (Request::exists('size')) {
+            $this->setSize($this->request['size']);
         }
     }
 
@@ -53,23 +69,33 @@ class Search {
      */
     public function negotiate($model)
     {
-        if(!$this->model) {
-            $modelPrefix = config('the-brick-search.namespace_prefix') ?? 'App\\';
-            $modelNameSpace = $modelPrefix . $model;
-            $this->model = new $modelNameSpace;
+        try {
+            $this->enableQueryLog();
+
+            if (!$this->model) {
+                $modelPrefix = config('the-brick-search.models.namespace_prefix') ?? 'App\\';
+                $modelNameSpace = $modelPrefix . $model;
+                $this->model = new $modelNameSpace;
+            }
+
+            $this->modelObj = $this->model;
+            $this->table = $this->model->getTable();
+
+            $response = $this->negotiateFields($this->table, $this->fields)
+                ->negotiateRelations($this->relations)
+                ->negotiateFilters($this->table, $this->filters)
+                ->negotiateRelationsFilters($this->relationsFilters)
+                ->negotiateOrder($this->table, $this->orderBy, $this->sort)
+                ->negotiateLimit($this->limit)
+                ->negotiateExecute();
+
+            return $response;
+        } catch (\Exception $e) {
+            return [
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ];
         }
-
-        $this->modelObj = $this->model;
-        $this->table = $this->model->getTable();
-
-        $this->negotiateFields($this->table, $this->fields)
-            ->negotiateRelations($this->relations)
-            ->negotiateFilters($this->table, $this->filters)
-            ->negotiateRelationsFilters($this->relationsFilters)
-            ->negotiateOrder($this->table, $this->orderBy, $this->sort)
-            ->negotiateLimit($this->limit);
-
-        return $this->model;
     }
 
     /**
@@ -151,6 +177,9 @@ class Search {
             } elseif (method_exists($this->modelObj, 'scope'.ucfirst(camel_case($field)))) {
                 $scope = camel_case($field);
                 $this->model = $this->model->$scope();
+            } elseif (method_exists($this->modelObj, 'get'.ucfirst(camel_case($field)).'Attribute')) {
+                $attribute = strtoupper($field);
+                $this->modelObj->addCustomAppends($attribute);
             }
 
             // continue the recursion
@@ -177,8 +206,8 @@ class Search {
             }
 
             $filters = array_splice($filters, 1);
-            $condition = $this->str_array_pos($filter, ['!=', '>=', '<=', '=', '>', '<', '%']);
-            
+            $condition = $this->strArrayPos($filter, ['!=', '>=', '<=', '=', '>', '<', '%']);
+
             if (Schema::hasColumn($table, $condition['attribute'])) {
                 if (strtolower(substr($condition['attribute'], -strlen('_date'))) === '_date') {
                     $this->model = $this->model->whereRaw(
@@ -215,7 +244,7 @@ class Search {
     {
 
         // (do the required processing...)
-        $temp = explode(',' , $fields, 2);
+        $temp = explode(',', $fields, 2);
 
         if (count($temp) === 0) {
             // end the recursion
@@ -252,7 +281,7 @@ class Search {
     {
 
         // (do the required processing...)
-        $temp = explode(',' , $filters, 2);
+        $temp = explode(',', $filters, 2);
 
         if (count($temp) === 0) {
             // end the recursion
@@ -317,6 +346,37 @@ class Search {
     }
 
     /**
+     * Enable query log in debug mode
+     */
+    public function enableQueryLog()
+    {
+        // enable debug log
+        if ($this->debug) {
+            DB::connection()->enableQueryLog();
+        }
+    }
+
+    /**
+     * Execute query
+     * @return $array
+     */
+    public function negotiateExecute()
+    {
+        if ($this->noPaginate) {
+            $res = $this->model->get();
+        } else {
+            $res = $this->model->paginate($this->size);
+        }
+
+        // return debug log
+        if ($this->debug) {
+            return DB::getQueryLog();
+        }
+
+        return $res;
+    }
+
+    /**
      * @return $this
      */
     public function setUpperCaseConvention()
@@ -339,7 +399,7 @@ class Search {
      * @param $array
      * @return array|bool
      */
-    private function str_array_pos($string, $array)
+    private function strArrayPos($string, $array)
     {
         for ($i = 0, $n = count($array); $i < $n; $i++) {
             if (($pos = strpos($string, $array[$i])) !== false) {
@@ -409,13 +469,46 @@ class Search {
     }
 
     /**
-     * Set limit $sort
+     * Set limit $limit
      * @param int $limit
      * @return $this
      */
     public function setLimit(int $limit)
     {
         $this->limit = $limit;
+        return $this;
+    }
+
+    /**
+     * Set noPaginate $noPaginate
+     * @param bool $noPaginate
+     * @return $this
+     */
+    public function setNoPaginate(bool $noPaginate)
+    {
+        $this->noPaginate = $noPaginate;
+        return $this;
+    }
+
+    /**
+     * Set debug $debug
+     * @param bool $debug
+     * @return $this
+     */
+    public function setDebug(bool $debug)
+    {
+        $this->debug = $debug;
+        return $this;
+    }
+
+    /**
+     * Set size
+     * @param int $size
+     * @return $this
+     */
+    public function setSize(int $size)
+    {
+        $this->size = $size;
         return $this;
     }
 }
