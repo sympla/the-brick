@@ -33,14 +33,40 @@ class Model extends IlluminateModel
         return [];
     }
 
-    public function setWithAppends($withAppends)
+    /**
+     * Set withAppends
+     * @param bool $withAppends
+     */
+    protected function setWithAppends(bool $withAppends)
     {
         self::$withAppends = $withAppends;
     }
 
-    public function addCustomAppends($customAppends)
+    /**
+     * Set new custom appends
+     * @param string $customAppends
+     */
+    protected function setCustomAppends(string $customAppends)
     {
         $this->setWithAppends(true);
         array_push(self::$customAppends, $customAppends);
+    }
+
+    /**
+     * add new custom appends
+     * @param string $customAppends
+     */
+    public function addCustomAppends(string $customAppends)
+    {
+        $this->setCustomAppends($customAppends);
+    }
+
+    /**
+     * add with appends
+     * @param bool $withAppends
+     */
+    public function addWithAppends(bool $withAppends)
+    {
+        $this->setCustomAppends($customAppends);
     }
 }

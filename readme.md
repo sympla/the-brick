@@ -52,6 +52,35 @@ Now you simply call your route with your filter and the fields you want to retur
 ```
 http://localhost:8000/api/users?&fields=name,email&filters=filterByPhone
 ```
+## Parameter list
+##### fields (string)
+List of fields and relationships for the search: id,name,relationName(id,email)
+
+##### filters (string)
+List of scopes that will be called in your model: filterByName
+```php
+public function scopeFilterByName($query)
+{
+   return $query->where('name', Request::get('name'));
+}
+```
+##### orderBy (string)
+Query sort field
+
+##### sort (string)
+Sort ASC or DESC
+
+##### limit (int)
+Query records Limit
+
+##### noPaginate (bool)
+Indicates whether the query will be paged
+
+##### size (int)
+Indicates how many records per page
+
+##### debug (bool)
+Returns an array with all the sql's that the query generated
 
 ## Using with Laravel
 
