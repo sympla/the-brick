@@ -11,7 +11,7 @@ Install the package using composer:
     $ composer require sympla/the-brick ~1.0
 
 Publish the package configuration:
-	$ php artisan vendor:publish --provider="Sympla\Search\Search\SearchServiceProvider"
+        $ php artisan vendor:publish --provider="Sympla\Search\Search\SearchServiceProvider"
 
 That's it.
 
@@ -26,7 +26,19 @@ public function index(Request $request)
 }
 ```
 
-Create your filter 
+Extend the negotiate on your model
+
+```php
+namespace App\Models;
+
+use Sympla\Search\Model\Model;
+
+class User extends Model
+{
+}
+```
+
+Create your filter
 
 ```php
 public function scopeFilterByPhone($query)
@@ -40,6 +52,35 @@ Now you simply call your route with your filter and the fields you want to retur
 ```
 http://localhost:8000/api/users?&fields=name,email&filters=filterByPhone
 ```
+## Parameter list
+##### fields (string)
+List of fields and relationships for the search: id,name,relationName(id,email)
+
+##### filters (string)
+List of scopes that will be called in your model: filterByName
+```php
+public function scopeFilterByName($query)
+{
+   return $query->where('name', Request::get('name'));
+}
+```
+##### orderBy (string)
+Query sort field
+
+##### sort (string)
+Sort ASC or DESC
+
+##### limit (int)
+Query records Limit
+
+##### noPaginate (bool)
+Indicates whether the query will be paged
+
+##### size (int)
+Indicates how many records per page
+
+##### debug (bool)
+Returns an array with all the sql's that the query generated
 
 ## Using with Laravel
 
@@ -65,8 +106,8 @@ Add to your docblock the documentation variables
 ```php
 /**
  * @negotiate Models\User
- * @negotiateDesc Get and filter all users 
-*/ 
+ * @negotiateDesc Get and filter all users
+*/
 public function index(Request $request)
 {
     $res = $res->negotiate('Models\User');
@@ -87,8 +128,11 @@ public function scopeFilterByPhone($query)
 
 #### Generate the documentation
 
-Execute the negotiate docgen command
-	$ php artisan negotiate:docgen
+Execute this command
+
+```bash
+php artisan negotiate:docgen
+```
 
 #### Accessing the Documentation
 
