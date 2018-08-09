@@ -64,6 +64,7 @@ class Search
     }
 
     /**
+     * Execute negotiate query
      * @param $model
      * @return mixed
      */
@@ -72,21 +73,7 @@ class Search
         try {
             $this->enableQueryLog();
 
-            if (!$this->model) {
-                $modelPrefix = config('the-brick-search.models.namespace_prefix') ?? 'App\\';
-                $modelNameSpace = $modelPrefix . $model;
-                $this->model = new $modelNameSpace;
-            }
-
-            $this->modelObj = $this->model;
-            $this->table = $this->model->getTable();
-
-            $response = $this->negotiateFields($this->table, $this->fields)
-                ->negotiateRelations($this->relations)
-                ->negotiateFilters($this->table, $this->filters)
-                ->negotiateRelationsFilters($this->relationsFilters)
-                ->negotiateOrder($this->table, $this->orderBy, $this->sort)
-                ->negotiateLimit($this->limit)
+            $response = $this->mountBuilder($model)
                 ->negotiateExecute();
 
             return $response;
@@ -96,6 +83,49 @@ class Search
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Get model builder
+     * @param  string $model
+     * @return Builder
+     */
+    public function getBuilder($model)
+    {
+        try {
+            $this->mountBuilder($model);
+            return $this->model;
+        } catch (\Exception $e) {
+            return [
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
+    /**
+     * Mount model builder by request
+     * @param $model
+     * @return mixed
+     */
+    private function mountBuilder($model)
+    {
+        if (!$this->model) {
+            $modelPrefix = config('the-brick-search.models.namespace_prefix') ?? 'App\\';
+            $modelNameSpace = $modelPrefix . $model;
+            $this->model = new $modelNameSpace;
+        }
+
+        $this->modelObj = $this->model;
+        $this->table = $this->model->getTable();
+
+        return $this->negotiateFields($this->table, $this->fields)
+            ->negotiateRelations($this->relations)
+            ->negotiateFilters($this->table, $this->filters)
+            ->negotiateRelationsFilters($this->relationsFilters)
+            ->negotiateOrder($this->table, $this->orderBy, $this->sort)
+            ->negotiateLimit($this->limit);
     }
 
     /**
