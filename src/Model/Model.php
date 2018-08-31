@@ -7,18 +7,41 @@ use Illuminate\Database\Eloquent\Model as IlluminateModel;
 class Model extends IlluminateModel
 {
     /**
-     * Dynamic/custom attributes
-     *
-     * @var array
+     * Model class
+     * @var string
      */
-    protected static $customAppends = [];
+    protected $class = null;
 
     /**
      * Should appends $customAppends
      *
      * @var boolean
      */
-    protected static $withAppends = false;
+    protected static $customAppends = [];
+
+    /**
+     * Should appends $withAppends
+     *
+     * @var boolean
+     */
+    protected static $withAppends = [];
+
+    /**
+     * __construct
+     * @param array $attributes
+     */
+    public function __construct(array $attributes = [])
+    {
+        $this->class = $this->getClass();
+        parent::__construct($attributes);
+
+        if (empty(self::$customAppends[$this->class])) {
+            self::$customAppends[$this->class] = [];
+        }
+        if (empty(self::$withAppends[$this->class])) {
+            self::$withAppends[$this->class] = [];
+        }
+    }
 
     /**
      * Check appends
@@ -27,8 +50,8 @@ class Model extends IlluminateModel
      */
     protected function getArrayableAppends()
     {
-        if (self::$withAppends) {
-            return self::$customAppends;
+        if (self::$withAppends[$this->class]) {
+            return self::$customAppends[$this->class];
         }
         return [];
     }
@@ -39,7 +62,7 @@ class Model extends IlluminateModel
      */
     protected function setWithAppends(bool $withAppends)
     {
-        self::$withAppends = $withAppends;
+        self::$withAppends[$this->class] = $withAppends;
     }
 
     /**
@@ -49,7 +72,7 @@ class Model extends IlluminateModel
     protected function setCustomAppends(string $customAppends)
     {
         $this->setWithAppends(true);
-        array_push(self::$customAppends, $customAppends);
+        array_push(self::$customAppends[$this->class], $customAppends);
     }
 
     /**
@@ -68,5 +91,14 @@ class Model extends IlluminateModel
     public function addWithAppends(bool $withAppends)
     {
         $this->setCustomAppends($customAppends);
+    }
+
+    /**
+     * Get model class
+     * @return string
+     */
+    private function getClass()
+    {
+        return get_class($this);
     }
 }
